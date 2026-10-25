@@ -1,0 +1,73 @@
+name: Publish AMR APK Release
+
+on:
+  push:
+    paths:
+      - '.github/workflows/release-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Prepare Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort | tail -1)"
+          fi
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Prepare web asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android/app/src/main/assets
+          cp index.html android/app/src/main/assets/index.html
+          test -s android/app/src/main/assets/index.html
+
+      - name: Build APK
+        working-directory: android
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          cp "$APK" "$GITHUB_WORKSPACE/Audio-Music-Restoration-v1.1.0-debug.apk"
+          sha256sum "$GITHUB_WORKSPACE/Audio-Music-Restoration-v1.1.0-debug.apk"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create v1.1.0 \
+            "$GITHUB_WORKSPACE/Audio-Music-Restoration-v1.1.0-debug.apk" \
+            --target "$GITHUB_SHA" \
+            --title "Audio Music Restoration v1.1.0" \
+            --notes "AMR Android test release. Includes native audio picker, automatic and manual clipping repair controls, A/B input/output comparison, and the Neural Restoration interface. Neural inference remains PC-server based." \
+            --latest
