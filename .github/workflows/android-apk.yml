@@ -5,6 +5,8 @@ on:
     paths:
       - 'android/**'
       - 'index.html'
+      - 'neural/**'
+      - 'shared/**'
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
 
@@ -46,6 +48,7 @@ jobs:
           set -euo pipefail
           mkdir -p android/app/src/main/assets
           cp index.html android/app/src/main/assets/index.html
+          test -s android/app/src/main/assets/index.html
 
       - name: Build debug APK
         working-directory: android
