@@ -1,0 +1,5 @@
+plugins { id 'com.android.application' }
+
+android { namespace 'com.amr.restoration'; compileSdk 35
+    defaultConfig { applicationId 'com.amr.restoration'; minSdk 25; targetSdk 28; versionCode 1; versionName '1.0.0' }
+}
