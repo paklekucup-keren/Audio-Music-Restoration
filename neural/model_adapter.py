@@ -1,12 +1,15 @@
-"""Real-model adapter boundary.
+"""Neural restoration adapter used by the AMR local server.
 
-Replace `process()` with a tested neural audio enhancement model. Keeping this
-interface separate prevents the browser/DSP layer from pretending that DSP is
-neural inference.
+The browser must never label ordinary DSP as neural inference. This adapter
+exposes Apollo as the real restoration backend when the upstream Apollo
+checkout is installed beside this project.
 """
 from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
+
+from apollo_engine import ApolloConfig, ApolloEngine
 
 @dataclass
 class ModelInfo:
@@ -15,13 +18,20 @@ class ModelInfo:
     runtime: str
 
 class NeuralRestorationAdapter:
-    info = ModelInfo("UNCONFIGURED", "0", "none")
+    def __init__(self, engine: Optional[ApolloEngine] = None):
+        self.engine = engine or ApolloEngine(ApolloConfig())
+
+    @property
+    def info(self) -> ModelInfo:
+        s = self.engine.status()
+        return ModelInfo(s["model"], s["model"], s["runtime"])
 
     def available(self) -> bool:
-        return False
+        return self.engine.available()
 
     def process(self, input_wav: Path, output_wav: Path, strength: float = 0.5) -> ModelInfo:
-        raise RuntimeError(
-            "No neural model is installed. Configure a tested model adapter "
-            "before enabling Neural Restoration."
-        )
+        # Apollo is a reconstruction model; strength is intentionally not
+        # mapped to a fake gain/EQ control. The UI should blend its result with
+        # the source if a user wants conservative restoration.
+        self.engine.restore(input_wav, output_wav)
+        return self.info
