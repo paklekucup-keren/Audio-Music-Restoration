@@ -1,0 +1,27 @@
+{
+  "protocol": "amr-client-server",
+  "version": 1,
+  "health": {
+    "method": "GET",
+    "path": "/health",
+    "required": ["status", "engine", "model_loaded"]
+  },
+  "restore": {
+    "method": "POST",
+    "path": "/restore",
+    "request": "multipart/form-data",
+    "field": "audio",
+    "accepted": ["audio/wav", "audio/mpeg", "audio/x-wav"],
+    "response": "audio/wav"
+  },
+  "clientRules": {
+    "neuralButtonEnabledOnlyWhenHealthy": true,
+    "neverPretendDspIsNeural": true,
+    "keepOriginalLocally": true,
+    "returnRestoredAudioToWorkflow": true
+  },
+  "versioning": {
+    "appVersionSource": "shared/amr-config.json",
+    "breakingProtocolRequiresVersionBump": true
+  }
+}
