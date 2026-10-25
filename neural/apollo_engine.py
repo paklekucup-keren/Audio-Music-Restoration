@@ -1,20 +1,10 @@
-"""Apollo neural music-restoration bridge.
-
-This adapter invokes the genuine upstream Apollo inference implementation rather
-than replacing it with DSP. Apollo is designed for restoration of lossy MP3 /
-compressed music and reconstructs degraded mid/high-frequency content.
-
-The bridge deliberately keeps the upstream model outside this repository so its
-original code, checkpoint and license remain attributable to their authors.
-"""
+"""Apollo neural music-restoration bridge."""
 from __future__ import annotations
-
 import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
-
 
 @dataclass
 class ApolloConfig:
@@ -24,10 +14,8 @@ class ApolloConfig:
     device: str = os.environ.get("AMR_APOLLO_DEVICE", "auto")
     timeout_seconds: int = int(os.environ.get("AMR_APOLLO_TIMEOUT", "3600"))
 
-
 class ApolloEngine:
-    """Small process-isolated adapter around Apollo inference."""
-
+    """Process-isolated bridge to the genuine upstream Apollo inference code."""
     name = "Apollo"
     version = "upstream"
     runtime = "PyTorch"
@@ -58,26 +46,20 @@ class ApolloEngine:
                 "Apollo is not installed. Put the upstream Apollo repository in "
                 f"{self.repo_dir} or set AMR_APOLLO_DIR."
             )
-
         cmd = [
             self.config.python_exe,
             self.config.inference_script,
-            f"--in_wav={str(input_wav.resolve())}",
-            f"--out_wav={str(output_wav.resolve())}
-",
+            f"--in_wav={input_wav.resolve()}",
+            f"--out_wav={output_wav.resolve()}",
             f"--device={self.config.device}",
         ]
         if chunk_seconds is not None:
             cmd.append(f"--chunk-seconds={chunk_seconds}")
         if overlap_seconds is not None:
             cmd.append(f"--overlap-seconds={overlap_seconds}")
-
         proc = subprocess.run(
-            cmd,
-            cwd=str(self.repo_dir),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
+            cmd, cwd=str(self.repo_dir), stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT, universal_newlines=True,
             timeout=self.config.timeout_seconds,
         )
         if proc.returncode != 0:
