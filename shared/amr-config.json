@@ -1,0 +1,36 @@
+{
+  "product": "Audio Music Restoration",
+  "schemaVersion": 1,
+  "appVersion": "1.0.0",
+  "client": {
+    "androidMinApi": 25,
+    "localFirst": true,
+    "sourceNeverOverwritten": true
+  },
+  "neural": {
+    "enabled": true,
+    "transport": "http",
+    "defaultHost": "http://127.0.0.1:8787",
+    "mode": "optional-server",
+    "restorationEngine": "apollo",
+    "separationEngine": null
+  },
+  "output": {
+    "wavBits": [16, 24],
+    "mp3BitratesKbps": [128, 192, 256, 320]
+  },
+  "restorationTargets": [
+    "shimmer",
+    "metallic-high-frequency-texture",
+    "grainy-digital-texture",
+    "artificial-vocal-texture",
+    "codec-damage",
+    "high-frequency-artifacts",
+    "lost-restoration-detail"
+  ],
+  "fingerprint": {
+    "metadataErase": true,
+    "acousticFingerprintRemoval": false,
+    "watermarkRemovalClaim": false
+  }
+}
