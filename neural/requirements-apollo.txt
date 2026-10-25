@@ -1,0 +1,4 @@
+# Apollo upstream runtime dependencies are defined by the upstream project.
+# This file is intentionally small: AMR does not fork or silently pin a
+# potentially incompatible PyTorch build.
+# Upstream: https://github.com/JusperLee/Apollo
