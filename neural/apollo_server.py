@@ -1,7 +1,8 @@
 """AMR neural restoration server.
 
-Run this on the machine that has the Apollo checkout and PyTorch runtime.
-The browser sends PCM/WAV bytes to /restore and receives a restored WAV.
+Runs on the neural host. The browser/Android client sends WAV PCM to /restore
+and receives a restored WAV. This server never pretends DSP is neural: if the
+Apollo runtime/model is unavailable, /restore returns 503.
 """
 from __future__ import annotations
 import json
@@ -12,9 +13,9 @@ from tempfile import NamedTemporaryFile
 from model_adapter import NeuralRestorationAdapter
 
 HOST = "0.0.0.0"
-PORT = 8765
+PORT = 8787
 ADAPTER = NeuralRestorationAdapter()
-MAX_BYTES = 1_500_000_000  # guardrail for legacy/small-memory clients
+MAX_BYTES = 1_500_000_000
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
